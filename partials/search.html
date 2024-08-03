@@ -1,25 +1,62 @@
-<h4>Kanji</h4>
-<ul>
-    {{ range .KanjiDataList }}
-    <li>
-        <div>
-            <div>
-                <span class="kanji">{{ .Kanji }}</span>
-            </div>
-
-            <div>
-                <span class="kunyomi">{{ .Kunyomi }}</span>
-                <span class="onyomi">{{ .Onyomi }}</span>
-            </div>
-        </div>
-        <p>
-            {{ range .Meanings }}
-            {{ . }},
-            {{ end }}
-        </p>
-    </li>
+<div>
+    {{ if .KanjiDataList }}
+    <h4>Kanji</h4>
     {{ end }}
-</ul>
+    <ul>
+        {{ range .KanjiDataList }}
+        <li>
+            <div class="kanji-info">
+                <a href="https://jisho.org/search/{{ .Kanji }}%23kanji" target="_blank"
+                    style="text-decoration: none; color: black;">
+                    <div>
+                        <span class="kanji">{{ .Kanji }}</span>
+                    </div>
+                </a>
+
+                <p style="padding-left: 1em; margin-top: 0px;">
+                    {{ range .Kunyomi }}
+                    <span class="kunyomi">{{ . }}</span>
+                    {{ end }}
+                    &emsp;
+                    {{ range .Onyomi }}
+                    <span class="onyomi">{{ . }}</span>
+                    {{ end }}
+                </p>
+            </div>
+            <p>
+                {{ range .Meanings }}
+                {{ . }},
+                {{ end }}
+            </p>
+            <div style="display: flex; justify-content:left;">
+                {{ if .AdditionalInfo.grade }}
+                <sub>
+                    Grade {{ .AdditionalInfo.grade }}
+                </sub>
+                {{ end }}
+                &emsp;
+                {{ if .AdditionalInfo.jlpt }}
+                <sub>
+                    JLPT-N{{ .AdditionalInfo.jlpt }}
+                </sub>
+                {{ end }}
+                &emsp;
+                {{ if .AdditionalInfo.Type }}
+                <sub>
+                    {{ .Type }}
+                    &emsp;
+                </sub>
+                {{ end }}
+                {{ if .AdditionalInfo.freq }}
+                <sub>
+                    Frequency: {{ .AdditionalInfo.freq }}
+                </sub>
+                {{ end }}
+            </div>
+        </li>
+        {{ end }}
+    </ul>
+</div>
 
 <style>
     ul {
@@ -38,7 +75,7 @@
         justify-content: space-between;
     }
 
-    .kanji {
-        font-size: 2em;
+    span {
+        white-space: nowrap;
     }
 </style>

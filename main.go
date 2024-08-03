@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 	"nihongo-search/lang/ja"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -29,17 +31,36 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePartialSearch(w http.ResponseWriter, r *http.Request) {
-	// Get arguments from the request
 	query := r.URL.Query().Get("query")
 	query = strings.TrimSpace(query)
 	fmt.Println("Query:", query)
 
 	tmpl := template.Must(template.ParseFiles("partials/search.html"))
 	data := SearchData{
-		KanjiDataList: nil,
+		KanjiDataList: []ja.KanjiData{},
 	}
 	counter++
-	data.KanjiDataList = ja.SearchKanjiByMeaning(kanjiDataList, query)
+	// data.KanjiDataList = ja.SearchKanjiByMeaning(kanjiDataList, query)
+	data.KanjiDataList = append(data.KanjiDataList, ja.GetKanji(kanjiDataList, query)...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByMeaning(kanjiDataList, query)...)
+
+	kunyomi := ja.RomajiToKana(query, "hiragana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDataList, kunyomi, "kunyomi")...)
+
+	onyomi := ja.RomajiToKana(query, "katakana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDataList, onyomi, "onyomi")...)
+
+	sort.Slice(data.KanjiDataList, func(i, j int) bool {
+		iFreq, err := strconv.Atoi(data.KanjiDataList[i].AdditionalInfo["freq"])
+		if err != nil {
+			iFreq = 99999
+		}
+		jFreq, err := strconv.Atoi(data.KanjiDataList[j].AdditionalInfo["freq"])
+		if err != nil {
+			jFreq = 99999
+		}
+		return iFreq < jFreq
+	})
 	tmpl.Execute(w, data)
 }
 

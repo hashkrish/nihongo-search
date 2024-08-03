@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 // Romaji to Hiragana  mappings
@@ -195,8 +196,8 @@ func PrintPWD() {
 
 type KanjiData struct {
 	Kanji          string
-	Onyomi         string
-	Kunyomi        string
+	Onyomi         []string
+	Kunyomi        []string
 	Type           string
 	Meanings       []string
 	AdditionalInfo map[string]string
@@ -234,10 +235,12 @@ func LoadKanjiFromJsonFile(filename string) ([]KanjiData, error) {
 	}
 
 	for _, k := range kanji {
+		onyomi := k[1].(string)
+		kunyomi := k[2].(string)
 		kanjiData := KanjiData{
 			Kanji:          k[0].(string),
-			Onyomi:         k[1].(string),
-			Kunyomi:        k[2].(string),
+			Onyomi:         strings.Fields(onyomi),
+			Kunyomi:        strings.Fields(kunyomi),
 			Type:           k[3].(string),
 			Meanings:       toStringSlice(k[4]),
 			AdditionalInfo: toStringMap(k[5]),
@@ -247,12 +250,44 @@ func LoadKanjiFromJsonFile(filename string) ([]KanjiData, error) {
 	return kanjiDataList, nil
 }
 
+func GetKanji(kanjiDataList []KanjiData, kanji string) []KanjiData {
+	var results []KanjiData
+	for _, kanjiData := range kanjiDataList {
+		if kanjiData.Kanji == kanji {
+			results = append(results, kanjiData)
+		}
+	}
+	return results
+}
+
 func SearchKanjiByMeaning(kanjiDataList []KanjiData, meaning string) []KanjiData {
 	var results []KanjiData
 	for _, kanjiData := range kanjiDataList {
 		for _, m := range kanjiData.Meanings {
 			if m == meaning {
 				results = append(results, kanjiData)
+			}
+		}
+	}
+	return results
+}
+
+func SearchKanjiByReading(kanjiDataList []KanjiData, reading string, type_ string) []KanjiData {
+	var results []KanjiData
+	if type_ == "onyomi" {
+		for _, kanjiData := range kanjiDataList {
+			for _, onyomi := range kanjiData.Onyomi {
+				if strings.Replace(onyomi, ".", "", -1) == reading {
+					results = append(results, kanjiData)
+				}
+			}
+		}
+	} else if type_ == "kunyomi" {
+		for _, kanjiData := range kanjiDataList {
+			for _, kunyomi := range kanjiData.Kunyomi {
+				if strings.Replace(kunyomi, ".", "", -1) == reading {
+					results = append(results, kanjiData)
+				}
 			}
 		}
 	}
