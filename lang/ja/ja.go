@@ -1,6 +1,13 @@
 package ja
 
-// Romaji to Hiragana and Katakana mappings
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+)
+
+// Romaji to Hiragana  mappings
 var romajiToHiragana = map[string]string{
 	// Basic syllables
 	"a": "あ", "i": "い", "u": "う", "e": "え", "o": "お",
@@ -21,7 +28,7 @@ var romajiToHiragana = map[string]string{
 	"ba": "ば", "bi": "び", "bu": "ぶ", "be": "べ", "bo": "ぼ",
 	"pa": "ぱ", "pi": "ぴ", "pu": "ぷ", "pe": "ぺ", "po": "ぽ",
 
-	// Yōon sounds (combination sounds)
+	// Yoon sounds (combination sounds)
 	"kya": "きゃ", "kyu": "きゅ", "kyo": "きょ",
 	"sha": "しゃ", "shu": "しゅ", "sho": "しょ",
 	"cha": "ちゃ", "chu": "ちゅ", "cho": "ちょ",
@@ -35,6 +42,7 @@ var romajiToHiragana = map[string]string{
 	"pya": "ぴゃ", "pyu": "ぴゅ", "pyo": "ぴょ",
 }
 
+// Romaji to Katakana  mappings
 var romajiToKatakana = map[string]string{
 	// Basic syllables
 	"a": "ア", "i": "イ", "u": "ウ", "e": "エ", "o": "オ",
@@ -116,13 +124,137 @@ func RomajiToKana(romaji string, to string) string {
 		if !found {
 			kana += string(romaji[i])
 			i++
+			continue
 		}
 
 		// Handle vowel lengthening (ー)
 		if to == "katakana" && i < len(romaji) && romaji[i] == romaji[i-1] {
 			kana += choonpu
+			i++
+			continue
 		}
 	}
 
 	return kana
+}
+
+func PrintPWD() {
+	fmt.Println("PWD:", os.Getenv("PWD"))
+}
+
+/*
+ * Sample code for loading kanji data from a JSON file
+ [
+    [
+        "亜",
+        "ア",
+        "つ.ぐ",
+        "jouyou",
+        [
+            "Asia",
+            "rank next",
+            "come after",
+            "-ous"
+        ],
+        {
+            "deroo": "3273",
+            "four_corner": "1010.6",
+            "freq": "1509",
+            "gakken": "1331",
+            "grade": "8",
+            "halpern_kkd": "4354",
+            "halpern_kkld": "2204",
+            "halpern_kkld_2ed": "2966",
+            "halpern_njecd": "3540",
+            "heisig": "1809",
+            "heisig6": "1950",
+            "henshall": "997",
+            "jf_cards": "1032",
+            "jis208": "1-16-01",
+            "jlpt": "1",
+            "kanji_in_context": "1818",
+            "kodansha_compact": "35",
+            "maniette": "1827",
+            "moro": "272",
+            "nelson_c": "43",
+            "nelson_n": "81",
+            "oneill_kk": "1788",
+            "oneill_names": "525",
+            "sh_desc": "0a7.14",
+            "sh_kk": "1616",
+            "sh_kk2": "1724",
+            "skip": "4-7-1",
+            "strokes": "7",
+            "tutt_cards": "1092",
+            "ucs": "4e9c"
+        }
+    ]
+ ]
+
+*/
+
+type KanjiData struct {
+	Kanji          string
+	Onyomi         string
+	Kunyomi        string
+	Type           string
+	Meanings       []string
+	AdditionalInfo map[string]string
+}
+
+func toStringSlice(data interface{}) []string {
+	var result []string
+	for _, v := range data.([]interface{}) {
+		result = append(result, v.(string))
+	}
+	return result
+}
+
+func toStringMap(data interface{}) map[string]string {
+	result := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		result[k] = v.(string)
+	}
+	return result
+}
+
+func LoadKanjiFromJsonFile(filename string) ([]KanjiData, error) {
+	// Load kanji from JSON file
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var kanji [][]interface{}
+	var kanjiDataList []KanjiData
+
+	err = json.Unmarshal(data, &kanji)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, k := range kanji {
+		kanjiData := KanjiData{
+			Kanji:          k[0].(string),
+			Onyomi:         k[1].(string),
+			Kunyomi:        k[2].(string),
+			Type:           k[3].(string),
+			Meanings:       toStringSlice(k[4]),
+			AdditionalInfo: toStringMap(k[5]),
+		}
+		kanjiDataList = append(kanjiDataList, kanjiData)
+	}
+	return kanjiDataList, nil
+}
+
+func SearchKanjiByMeaning(kanjiDataList []KanjiData, meaning string) []KanjiData {
+	var results []KanjiData
+	for _, kanjiData := range kanjiDataList {
+		for _, m := range kanjiData.Meanings {
+			if m == meaning {
+				results = append(results, kanjiData)
+			}
+		}
+	}
+	return results
 }

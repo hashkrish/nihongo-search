@@ -1,6 +1,44 @@
-<!-- golang: iterate through data -->
+<h4>Kanji</h4>
 <ul>
-{{ range .Results }}
-    <li>{{ . }}</li>
-{{ end }}
+    {{ range .KanjiDataList }}
+    <li>
+        <div>
+            <div>
+                <span class="kanji">{{ .Kanji }}</span>
+            </div>
+
+            <div>
+                <span class="kunyomi">{{ .Kunyomi }}</span>
+                <span class="onyomi">{{ .Onyomi }}</span>
+            </div>
+        </div>
+        <p>
+            {{ range .Meanings }}
+            {{ . }},
+            {{ end }}
+        </p>
+    </li>
+    {{ end }}
 </ul>
+
+<style>
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        border: 1px solid #ccc;
+        margin: 10px 0;
+        padding: 10px;
+    }
+
+    li div {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .kanji {
+        font-size: 2em;
+    }
+</style>

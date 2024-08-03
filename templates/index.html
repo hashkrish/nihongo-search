@@ -12,10 +12,11 @@
         <h1> Nihongo search!</h1>
         <p>Search for Japanese words</p>
         <div class="search">
-            <input id="query" type="text" name="query" hx-get="/partial/search" hx-trigger="keyup"
+            <input id="query" type="text" name="query" hx-get="/partial/search" hx-trigger="keyup changed delay:300ms, search"
                 hx-target="#results" />
         </div>
         <div id="results"></div>
+        <div id="preview"></div>
     </div>
 </body>
 
@@ -24,9 +25,23 @@
 <script>
     // Default focus on the input field
     document.getElementById("query").focus();
+
+    // If keyup of / or enter, focus on the input field
+    document.addEventListener("keyup", function (event) {
+        if (event.key === "/") {
+            document.getElementById("query").focus();
+        }
+        if (event.key === "Enter") {
+            document.getElementById("query").focus();
+        }
+    });
 </script>
 
 <style>
+    body {
+        font-family: sans-serif;
+    }
+
     .container {
         margin: 0 auto;
         width: 50%;
@@ -40,5 +55,23 @@
     #results {
         margin-top: 1em;
         text-align: left;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            width: 100%;
+        }
+    }
+
+    .kanji {
+        font-size: 2em;
+    }
+
+    .kunyomi {
+        color: #666;
+    }
+
+    .onyomi {
+        color: #666;
     }
 </style>
