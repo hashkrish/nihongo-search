@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ .Title }}</title>
+    <script src="https://unpkg.com/htmx.org@1.4.0"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1> Nihongo search!</h1>
+        <p>Search for Japanese words</p>
+        <div class="search">
+            <input id="query" type="text" name="query" hx-get="/partial/search" hx-trigger="keyup"
+                hx-target="#results" />
+        </div>
+        <div id="results"></div>
+    </div>
+</body>
+
+</html>
+
+<script>
+    // Default focus on the input field
+    document.getElementById("query").focus();
+</script>
+
+<style>
+    .container {
+        margin: 0 auto;
+        width: 50%;
+        text-align: center;
+    }
+
+    .search {
+        text-align: center;
+    }
+
+    #results {
+        margin-top: 1em;
+        text-align: left;
+    }
+</style>
