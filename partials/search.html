@@ -57,24 +57,49 @@
         {{ end }}
     </ul>
 </div>
+<div>
+    {{ if .WordDataList }}
+    <h4>Words</h4>
+    {{ end }}
+    <ul>
+        {{ range .WordDataList }}
+        <li>
+            <div class="word-info">
+                <a href="https://jisho.org/search/{{ .Word }}" target="_blank"
+                    style="text-decoration: none; color: black;">
+                    <div>
+                        <span class="word">{{ .Word }}</span>
+                    </div>
+                </a>
+
+                <p style="padding-left: 1em; margin-top: 0px;">
+                    <span class="kunyomi">{{ .Reading }}</span>
+                </p>
+            </div>
+            <p>
+                {{ range .Meanings }}
+                {{ . }},
+                {{ end }}
+            </p>
+            <div style="display: flex; justify-content:left;">
+                {{ if .Category }}
+                <sub>
+                    {{ .Category }}
+                </sub>
+                &emsp;
+                {{ end }}
+                {{ if .Identifier }}
+                <sub>
+                    {{ .Identifier }}
+                </sub>
+                {{ end }}
+            </div>
+        </li>
+        {{ end }}
+    </ul>
+</div>
 
 <style>
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    li {
-        border: 1px solid #ccc;
-        margin: 10px 0;
-        padding: 10px;
-    }
-
-    li div {
-        display: flex;
-        justify-content: space-between;
-    }
-
     span {
         white-space: nowrap;
     }

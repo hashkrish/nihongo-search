@@ -1,0 +1,4 @@
+{{ range .KanjiDataList }}「{{ .Kanji }}」 {{ range .Kunyomi }}{{ . }} {{ end }} {{ range .Onyomi }}{{ . }} {{ end }}  {{ range .Meanings }}{{ . }}, {{ end }}
+{{ end }}
+{{ range .WordDataList }}「{{ .Word }}」 {{ .Reading }} {{ range .Meanings }}{{ . }}, {{ end }}
+{{ end }}

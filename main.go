@@ -11,7 +11,8 @@ import (
 )
 
 var counter int
-var kanjiDataList []ja.KanjiData
+var kanjiDetails []ja.KanjiData
+var JMDictWords []ja.JMDictWord
 
 type PageData struct {
 	Title string
@@ -19,6 +20,7 @@ type PageData struct {
 
 type SearchData struct {
 	KanjiDataList []ja.KanjiData
+	WordDataList  []ja.JMDictWord
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +32,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO: Refactor this function to use a single search function
 func handlePartialSearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	query = strings.TrimSpace(query)
@@ -38,17 +41,22 @@ func handlePartialSearch(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("partials/search.html"))
 	data := SearchData{
 		KanjiDataList: []ja.KanjiData{},
+		WordDataList:  []ja.JMDictWord{},
 	}
 	counter++
-	// data.KanjiDataList = ja.SearchKanjiByMeaning(kanjiDataList, query)
-	data.KanjiDataList = append(data.KanjiDataList, ja.GetKanji(kanjiDataList, query)...)
-	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByMeaning(kanjiDataList, query)...)
+	if query == "" {
+		tmpl.Execute(w, data)
+		return
+	}
+
+	data.KanjiDataList = append(data.KanjiDataList, ja.GetKanji(kanjiDetails, query)...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByMeaning(kanjiDetails, query)...)
 
 	kunyomi := ja.RomajiToKana(query, "hiragana")
-	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDataList, kunyomi, "kunyomi")...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, kunyomi, "kunyomi")...)
 
 	onyomi := ja.RomajiToKana(query, "katakana")
-	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDataList, onyomi, "onyomi")...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, onyomi, "onyomi")...)
 
 	sort.Slice(data.KanjiDataList, func(i, j int) bool {
 		iFreq, err := strconv.Atoi(data.KanjiDataList[i].AdditionalInfo["freq"])
@@ -61,36 +69,156 @@ func handlePartialSearch(w http.ResponseWriter, r *http.Request) {
 		}
 		return iFreq < jFreq
 	})
+
+	data.WordDataList = append(data.WordDataList, ja.GetJMDictyWord(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByMeaning(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByReading(JMDictWords, ja.RomajiToKana(query, "hiragana"))...)
+	fmt.Println("Word data list:", data.WordDataList)
+
+	tmpl.Execute(w, data)
+}
+
+func handlePangoPartialSearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	query = strings.TrimSpace(query)
+	fmt.Println("Query:", query)
+
+	tmpl := template.Must(template.ParseFiles("partials/pango/search.html"))
+	data := SearchData{
+		KanjiDataList: []ja.KanjiData{},
+		WordDataList:  []ja.JMDictWord{},
+	}
+	counter++
+	if query == "" {
+		tmpl.Execute(w, data)
+		return
+	}
+
+	data.KanjiDataList = append(data.KanjiDataList, ja.GetKanji(kanjiDetails, query)...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByMeaning(kanjiDetails, query)...)
+
+	kunyomi := ja.RomajiToKana(query, "hiragana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, kunyomi, "kunyomi")...)
+
+	onyomi := ja.RomajiToKana(query, "katakana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, onyomi, "onyomi")...)
+
+	sort.Slice(data.KanjiDataList, func(i, j int) bool {
+		iFreq, err := strconv.Atoi(data.KanjiDataList[i].AdditionalInfo["freq"])
+		if err != nil {
+			iFreq = 99999
+		}
+		jFreq, err := strconv.Atoi(data.KanjiDataList[j].AdditionalInfo["freq"])
+		if err != nil {
+			jFreq = 99999
+		}
+		return iFreq < jFreq
+	})
+
+	if len(data.KanjiDataList) > 3 {
+		data.KanjiDataList = data.KanjiDataList[:3]
+	}
+
+	data.WordDataList = append(data.WordDataList, ja.GetJMDictyWord(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByMeaning(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByReading(JMDictWords, ja.RomajiToKana(query, "hiragana"))...)
+	fmt.Println("Word data list:", data.WordDataList)
+
+	if len(data.WordDataList) > 3 {
+		data.WordDataList = data.WordDataList[:3]
+	}
+
+	tmpl.Execute(w, data)
+}
+
+func handleTextPartialSearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	query = strings.TrimSpace(query)
+	fmt.Println("Query:", query)
+
+	tmpl := template.Must(template.ParseFiles("partials/text/search.html"))
+	data := SearchData{
+		KanjiDataList: []ja.KanjiData{},
+		WordDataList:  []ja.JMDictWord{},
+	}
+	counter++
+	if query == "" {
+		tmpl.Execute(w, data)
+		return
+	}
+
+	data.KanjiDataList = append(data.KanjiDataList, ja.GetKanji(kanjiDetails, query)...)
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByMeaning(kanjiDetails, query)...)
+
+	kunyomi := ja.RomajiToKana(query, "hiragana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, kunyomi, "kunyomi")...)
+
+	onyomi := ja.RomajiToKana(query, "katakana")
+	data.KanjiDataList = append(data.KanjiDataList, ja.SearchKanjiByReading(kanjiDetails, onyomi, "onyomi")...)
+
+	sort.Slice(data.KanjiDataList, func(i, j int) bool {
+		iFreq, err := strconv.Atoi(data.KanjiDataList[i].AdditionalInfo["freq"])
+		if err != nil {
+			iFreq = 99999
+		}
+		jFreq, err := strconv.Atoi(data.KanjiDataList[j].AdditionalInfo["freq"])
+		if err != nil {
+			jFreq = 99999
+		}
+		return iFreq < jFreq
+	})
+
+	if len(data.KanjiDataList) > 3 {
+		data.KanjiDataList = data.KanjiDataList[:3]
+	}
+
+	data.WordDataList = append(data.WordDataList, ja.GetJMDictyWord(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByMeaning(JMDictWords, query)...)
+	data.WordDataList = append(data.WordDataList, ja.SearchJMDictByReading(JMDictWords, ja.RomajiToKana(query, "hiragana"))...)
+	fmt.Println("Word data list:", data.WordDataList)
+
+	if len(data.WordDataList) > 3 {
+		data.WordDataList = data.WordDataList[:3]
+	}
+
 	tmpl.Execute(w, data)
 }
 
 func main() {
-	// romaji := "konnichiwa"
-	// fmt.Println("Hiragana:", ja.RomajiToKana(romaji, "hiragana"))
-	// fmt.Println("Katakana:", ja.RomajiToKana(romaji, "katakana"))
-
-	// romaji2 := "atakka"
-	// fmt.Println("Katakana with lengthening:", ja.RomajiToKana(romaji2, "katakana"))
-
-	// romaji3 := "nippon"
-	// fmt.Println("Hiragana with double consonant:", ja.RomajiToKana(romaji3, "hiragana"))
-
-	// romaji4 := "santana kirishunan"
-	// fmt.Println("Katakana with double consonant and lengthening:", ja.RomajiToKana(romaji4, "katakana"))
-
-	// romaji5 := "aa"
-	// fmt.Println("Katakana with double consonant and lengthening:", ja.RomajiToKana(romaji5, "katakana"))
-
 	var err error
-	kanjiDataList, err = ja.LoadKanjiFromJsonFile("kanji_bank_1.json")
-	if err != nil {
-		fmt.Println("Error loading kanji data:", err)
-		return
+	var kanjiDetailsList []ja.KanjiData
+	for i := 1; i <= 2; i++ {
+		filename := "./data/ja/kanji_bank_" + strconv.Itoa(i) + ".json"
+		kanjiDetailsList, err = ja.LoadKanjiFromJsonFile(filename)
+		if err != nil {
+			fmt.Println("Error loading kanji data:", err)
+			return
+		}
+		kanjiDetails = append(kanjiDetails, kanjiDetailsList...)
 	}
-	// fmt.Println(ja.SearchKanjiByMeaning(kanjiDataList, "to be"))
 
+	var JMDictWordsData []ja.JMDictWord
+	for i := 1; i <= 75; i++ {
+		filename := "./data/ja/term_bank_" + strconv.Itoa(i) + ".json"
+		JMDictWordsData, err = ja.LoadJMDictFromJsonFile(filename)
+		if err != nil {
+			fmt.Println("Error loading JMDict data:", err)
+			return
+		}
+		JMDictWords = append(JMDictWords, JMDictWordsData...)
+
+	}
+	fmt.Println("JMDict words loaded")
+
+	// Route handlers
 	http.HandleFunc("GET /", handleHome)
 	http.HandleFunc("GET /partial/search", handlePartialSearch)
+	http.HandleFunc("GET /partial/pango/search", handlePangoPartialSearch)
+	http.HandleFunc("GET /partial/text/search", handleTextPartialSearch)
+
+	// Start server
 	fmt.Println("Server running on port 8080")
-	http.ListenAndServe(":8080", nil)
+	if err = http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Println(err)
+	}
 }

@@ -1,0 +1,35 @@
+<!-- <span foreground="#ffffff">Kanji:</span> -->
+
+{{ range .KanjiDataList }}
+
+<span>「{{ .Kanji }}」</span>
+
+{{ range .Kunyomi }}
+<span>{{ . }}</span>
+{{ end }}
+
+{{ range .Onyomi }}
+<span>{{ . }}</span>
+{{ end }}
+
+<span>
+    {{ range .Meanings }}
+    {{ . }},
+    {{ end }}
+</span>
+
+{{ end }}
+
+<!-- <span foreground="#ffffff">Words:</span> -->
+
+{{ range .WordDataList }}
+
+<span>「{{ .Word }}」</span>
+<span>{{ .Reading }}</span>
+<span>
+    {{ range .Meanings }}
+    {{ . }},
+    {{ end }}
+</span>
+
+{{ end }}

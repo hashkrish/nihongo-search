@@ -203,6 +203,14 @@ type KanjiData struct {
 	AdditionalInfo map[string]string
 }
 
+type JMDictWord struct {
+	Word       string
+	Reading    string
+	Category   string
+	Meanings   []string
+	Identifier int
+}
+
 func toStringSlice(data interface{}) []string {
 	var result []string
 	for _, v := range data.([]interface{}) {
@@ -250,6 +258,34 @@ func LoadKanjiFromJsonFile(filename string) ([]KanjiData, error) {
 	return kanjiDataList, nil
 }
 
+func LoadJMDictFromJsonFile(filename string) ([]JMDictWord, error) {
+	// Load kanji from JSON file
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var iwords [][]interface{}
+	var words []JMDictWord
+
+	err = json.Unmarshal(data, &iwords)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, iw := range iwords {
+		words = append(words, JMDictWord{
+			Word:       iw[0].(string),
+			Reading:    iw[1].(string),
+			Category:   iw[2].(string),
+			Meanings:   toStringSlice(iw[5]),
+			Identifier: int(iw[6].(float64)),
+		})
+	}
+
+	return words, nil
+}
+
 func GetKanji(kanjiDataList []KanjiData, kanji string) []KanjiData {
 	var results []KanjiData
 	for _, kanjiData := range kanjiDataList {
@@ -289,6 +325,40 @@ func SearchKanjiByReading(kanjiDataList []KanjiData, reading string, type_ strin
 					results = append(results, kanjiData)
 				}
 			}
+		}
+	}
+	return results
+}
+
+func SearchJMDictByMeaning(words []JMDictWord, meaning string) []JMDictWord {
+	var results []JMDictWord
+	for _, word := range words {
+		for _, m := range word.Meanings {
+			if strings.ToLower(m) == meaning {
+				results = append(results, word)
+			}
+		}
+	}
+	return results
+}
+
+func SearchJMDictByReading(words []JMDictWord, reading string) []JMDictWord {
+	var results []JMDictWord
+	if strings.Replace(reading, ".", "", -1) == reading {
+		for _, word := range words {
+			if word.Reading == reading {
+				results = append(results, word)
+			}
+		}
+	}
+	return results
+}
+
+func GetJMDictyWord(words []JMDictWord, word string) []JMDictWord {
+	var results []JMDictWord
+	for _, w := range words {
+		if w.Word == word {
+			results = append(results, w)
 		}
 	}
 	return results
