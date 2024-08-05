@@ -1,0 +1,7 @@
+services:
+  nihongo-search:
+    build: .
+    image: nihongo-search:latest
+    container_name: nihongo-search
+    ports:
+      - "8080:8080"
