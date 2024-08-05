@@ -1,0 +1,12 @@
+[build]
+builder = "go"
+
+[dependencies]
+go = "1.22"
+
+[deploy]
+target = "docker"
+
+[scripts]
+build = "go build -o main ."
+start = "./main"
