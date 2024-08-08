@@ -184,6 +184,10 @@ func handleTextPartialSearch(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+func handleHealthCheck(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func main() {
 	var err error
 	var kanjiDetailsList []ja.KanjiData
@@ -212,6 +216,7 @@ func main() {
 
 	// Route handlers
 	http.HandleFunc("GET /", handleHome)
+	http.HandleFunc("GET /healthcheck", handleHealthCheck)
 	http.HandleFunc("GET /partial/search", handlePartialSearch)
 	http.HandleFunc("GET /partial/pango/search", handlePangoPartialSearch)
 	http.HandleFunc("GET /partial/text/search", handleTextPartialSearch)
