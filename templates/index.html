@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title>{{ .Title }}</title>
     <script src="https://unpkg.com/htmx.org@1.4.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -18,6 +19,11 @@
         <div id="results"></div>
         <div id="preview"></div>
     </div>
+    <footer>
+        <a href="https://github.com/hashkrish/nihongo-search" target="_blank" style="text-decoration: none; color: black">
+            <i class="fab fa-github"></i> /hashkrish/nihongo-search
+        </a>
+    </footer>
 </body>
 
 </html>
@@ -101,5 +107,17 @@
     li div {
         display: flex;
         justify-content: space-between;
+    }
+
+    footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: #DDD;
+        padding: 1px;
+        margin: 0px;
+        text-align: center;
+        font-size: 0.8em;
     }
 </style>
