@@ -10,8 +10,8 @@
 
 <body>
     <div class="container">
-        <h1>Nihon<span style="color: #5b99c2">go</span> search!</h1>
-        <p>Search for Japanese words</p>
+        <h1 class="title">Nihon<span style="color: #5b99c2">go</span> search!</h1>
+        <p style="margin-top: 0em;" >Search for Japanese words</p>
         <div class="search">
             <input id="query" type="text" name="query" hx-get="/partial/search"
                 hx-trigger="keyup changed delay:300ms, search" hx-target="#results" />
@@ -20,7 +20,8 @@
         <div id="preview"></div>
     </div>
     <footer>
-        <a href="https://github.com/hashkrish/nihongo-search" target="_blank" style="text-decoration: none; color: black">
+        <a href="https://github.com/hashkrish/nihongo-search" target="_blank"
+            style="text-decoration: none; color: black">
             <i class="fab fa-github"></i> /hashkrish/nihongo-search
         </a>
     </footer>
@@ -54,8 +55,20 @@
         text-align: center;
     }
 
+    .title {
+        font-size: 3em;
+    }
+
     .search {
         text-align: center;
+    }
+
+    .search input {
+        width: auto;
+        font-size: 1.5em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding-left: 0.25em;
     }
 
     #results {
